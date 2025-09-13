@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #define DELIMITADORES " \t\r\n\a"
 
@@ -31,17 +33,24 @@ int main() {
         }
 
         if (strcmp(args[0], "exit") == 0) {
-            printf("Saindo shell... Volte sempre!\n");
+            printf("Saindo do MyShell...\n");
             break;
         }
 
-        printf("Análise do comando:\n");
-        for (int j = 0; j < i; j++) {
-            printf("  Argumento[%d]: %s\n", j, args[j]);
+        pid_t pid = fork();
+
+        if (pid < 0) {
+            perror("myshell: erro no fork");
+        } else if (pid == 0) {
+            if (execvp(args[0], args) < 0) {
+                perror("myshell");
+                exit(EXIT_FAILURE);
+            }
+        } else {
+            wait(NULL);
         }
-        printf("--- Fim da análise ---\n");
     }
 
-    printf("Meu shell foi encerrado...\n");
+    printf("Programa encerrado.\n");
     return 0;
 }
